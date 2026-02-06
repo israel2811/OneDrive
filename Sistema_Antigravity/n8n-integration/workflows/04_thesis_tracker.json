@@ -1,0 +1,73 @@
+{
+    "name": "04 - Thesis Progress Tracker",
+    "nodes": [
+        {
+            "parameters": {
+                "rule": {
+                    "interval": [
+                        {
+                            "field": "cronExpression",
+                            "expression": "0 18 * * *"
+                        }
+                    ]
+                }
+            },
+            "name": "Trigger 6PM",
+            "type": "n8n-nodes-base.scheduleTrigger",
+            "position": [
+                250,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "command": "Get-ChildItem -Path 'C:\\Users\\Lenovo\\.gemini\\antigravity\\playground\\magnetic-quasar' -Filter '*.md' | ForEach-Object { (Get-Content $_.FullName | Measure-Object -Word).Words } | Measure-Object -Sum | Select-Object -ExpandProperty Sum"
+            },
+            "name": "Count Words",
+            "type": "n8n-nodes-base.executeCommand",
+            "position": [
+                450,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "const words = parseInt(items[0].json.stdout) || 0;\nconst goal = 250000;\nreturn [{ json: { words, percentage: ((words/goal)*100).toFixed(1) + '%', chapters: Math.floor(words/5000) } }];"
+            },
+            "name": "Calculate",
+            "type": "n8n-nodes-base.code",
+            "position": [
+                650,
+                300
+            ]
+        }
+    ],
+    "connections": {
+        "Trigger 6PM": {
+            "main": [
+                [
+                    {
+                        "node": "Count Words",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Count Words": {
+            "main": [
+                [
+                    {
+                        "node": "Calculate",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "tags": [
+        "thesis",
+        "tracking"
+    ]
+}

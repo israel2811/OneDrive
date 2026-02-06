@@ -1,0 +1,92 @@
+{
+    "name": "07 - Error Recovery Automation",
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "error-detected",
+                "responseMode": "responseNode"
+            },
+            "name": "Error Webhook",
+            "type": "n8n-nodes-base.webhook",
+            "position": [
+                250,
+                300
+            ],
+            "webhookId": "error-recovery"
+        },
+        {
+            "parameters": {
+                "filePath": "C:\\Users\\Lenovo\\OneDrive\\Sistema_Antigravity\\recovery-system\\EMERGENCY_PROMPTS.md"
+            },
+            "name": "Read Prompts",
+            "type": "n8n-nodes-base.readFile",
+            "position": [
+                450,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "const error = items[0].json.body?.error || 'Unknown error';\nconst prompts = items[1]?.json?.data || '';\nconst recovery = prompts.includes('NUCLEAR') ? 'NUCLEAR RECOVERY' : 'STANDARD RECOVERY';\nreturn [{ json: { error, recovery, timestamp: new Date().toISOString(), prompts: prompts.substring(0, 500) } }];"
+            },
+            "name": "Analyze",
+            "type": "n8n-nodes-base.code",
+            "position": [
+                650,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "respondWith": "json",
+                "responseBody": "={{$json}}"
+            },
+            "name": "Respond",
+            "type": "n8n-nodes-base.respondToWebhook",
+            "position": [
+                850,
+                300
+            ]
+        }
+    ],
+    "connections": {
+        "Error Webhook": {
+            "main": [
+                [
+                    {
+                        "node": "Read Prompts",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Read Prompts": {
+            "main": [
+                [
+                    {
+                        "node": "Analyze",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Analyze": {
+            "main": [
+                [
+                    {
+                        "node": "Respond",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "tags": [
+        "error",
+        "recovery"
+    ]
+}

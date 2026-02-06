@@ -1,0 +1,93 @@
+{
+    "name": "09 - Conversation Logger",
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "log-conversation",
+                "responseMode": "responseNode"
+            },
+            "name": "Webhook",
+            "type": "n8n-nodes-base.webhook",
+            "position": [
+                250,
+                300
+            ],
+            "webhookId": "conv-log"
+        },
+        {
+            "parameters": {
+                "jsCode": "const { title, content, tags } = items[0].json.body || {};\nconst ts = new Date().toISOString().replace(/[:.]/g, '-');\nconst filename = `${ts}_${(title || 'untitled').replace(/[^a-zA-Z0-9]/g, '_')}.md`;\nconst markdown = `# ${title || 'Conversation'}\\n\\n**Date**: ${new Date().toLocaleString()}\\n**Tags**: ${tags || 'general'}\\n\\n---\\n\\n${content || 'No content'}`;\nreturn [{ json: { filename, markdown, title, tags } }];"
+            },
+            "name": "Format MD",
+            "type": "n8n-nodes-base.code",
+            "position": [
+                450,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "fileName": "C:\\Users\\Lenovo\\OneDrive\\Sistema_Antigravity\\conversations\\={{$json.filename}}",
+                "fileContent": "={{$json.markdown}}"
+            },
+            "name": "Save File",
+            "type": "n8n-nodes-base.writeFile",
+            "position": [
+                650,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "respondWith": "json",
+                "responseBody": "={\"success\": true, \"file\": \"{{$json.filename}}\"}"
+            },
+            "name": "Respond",
+            "type": "n8n-nodes-base.respondToWebhook",
+            "position": [
+                850,
+                300
+            ]
+        }
+    ],
+    "connections": {
+        "Webhook": {
+            "main": [
+                [
+                    {
+                        "node": "Format MD",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Format MD": {
+            "main": [
+                [
+                    {
+                        "node": "Save File",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Save File": {
+            "main": [
+                [
+                    {
+                        "node": "Respond",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "tags": [
+        "conversation",
+        "logging"
+    ]
+}

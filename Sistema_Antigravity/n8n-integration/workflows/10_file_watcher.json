@@ -1,0 +1,90 @@
+{
+    "name": "10 - File Watcher Sync",
+    "nodes": [
+        {
+            "parameters": {
+                "path": "C:\\Users\\Lenovo\\OneDrive\\Sistema_Antigravity",
+                "events": [
+                    "add",
+                    "change"
+                ],
+                "options": {
+                    "ignoreInitial": true
+                }
+            },
+            "name": "Watch Files",
+            "type": "n8n-nodes-base.localFileTrigger",
+            "position": [
+                250,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "string": [
+                        {
+                            "value1": "={{$json.path}}",
+                            "operation": "contains",
+                            "value2": ".md"
+                        }
+                    ]
+                }
+            },
+            "name": "Is Markdown?",
+            "type": "n8n-nodes-base.if",
+            "position": [
+                450,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "values": {
+                    "string": [
+                        {
+                            "name": "synced",
+                            "value": "={{$json.path}} synced at {{$now}}"
+                        }
+                    ]
+                }
+            },
+            "name": "Log Sync",
+            "type": "n8n-nodes-base.set",
+            "position": [
+                650,
+                250
+            ]
+        }
+    ],
+    "connections": {
+        "Watch Files": {
+            "main": [
+                [
+                    {
+                        "node": "Is Markdown?",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Is Markdown?": {
+            "main": [
+                [
+                    {
+                        "node": "Log Sync",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                []
+            ]
+        }
+    },
+    "tags": [
+        "file",
+        "sync",
+        "watch"
+    ]
+}

@@ -1,0 +1,143 @@
+{
+    "name": "02 - Sync Conversations to Cloud",
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "save-conversation",
+                "responseMode": "responseNode"
+            },
+            "name": "Webhook: Save Conversation",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 1,
+            "position": [
+                250,
+                300
+            ],
+            "webhookId": "conv-sync-001"
+        },
+        {
+            "parameters": {
+                "values": {
+                    "string": [
+                        {
+                            "name": "timestamp",
+                            "value": "={{$now.format('YYYY-MM-DD_HH-mm')}}"
+                        },
+                        {
+                            "name": "title",
+                            "value": "={{$json.body.title || 'Untitled Conversation'}}"
+                        },
+                        {
+                            "name": "content",
+                            "value": "={{$json.body.content}}"
+                        },
+                        {
+                            "name": "tags",
+                            "value": "={{$json.body.tags || 'general'}}"
+                        }
+                    ]
+                }
+            },
+            "name": "Format Conversation",
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 2,
+            "position": [
+                450,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "fileName": "={{$json.timestamp}}_{{$json.title}}.md",
+                "fileContent": "# {{$json.title}}\n**Fecha**: {{$json.timestamp}}\n**Tags**: {{$json.tags}}\n\n---\n\n{{$json.content}}"
+            },
+            "name": "Create Markdown File",
+            "type": "n8n-nodes-base.writeFile",
+            "typeVersion": 1,
+            "position": [
+                650,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "upload"
+            },
+            "name": "Upload to Drive",
+            "type": "n8n-nodes-base.googleDrive",
+            "typeVersion": 3,
+            "position": [
+                850,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "respondWith": "json",
+                "responseBody": "={\"success\": true, \"file\": \"{{$json.timestamp}}_{{$json.title}}.md\"}"
+            },
+            "name": "Respond Success",
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1,
+            "position": [
+                1050,
+                300
+            ]
+        }
+    ],
+    "connections": {
+        "Webhook: Save Conversation": {
+            "main": [
+                [
+                    {
+                        "node": "Format Conversation",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Format Conversation": {
+            "main": [
+                [
+                    {
+                        "node": "Create Markdown File",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Create Markdown File": {
+            "main": [
+                [
+                    {
+                        "node": "Upload to Drive",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Upload to Drive": {
+            "main": [
+                [
+                    {
+                        "node": "Respond Success",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "settings": {
+        "saveManualExecutions": true
+    },
+    "tags": [
+        "conversations",
+        "sync",
+        "webhook"
+    ]
+}

@@ -1,0 +1,132 @@
+{
+    "name": "08 - Health Check Monitor",
+    "nodes": [
+        {
+            "parameters": {
+                "rule": {
+                    "interval": [
+                        {
+                            "field": "minutes",
+                            "minutesInterval": 5
+                        }
+                    ]
+                }
+            },
+            "name": "Every 5 Min",
+            "type": "n8n-nodes-base.scheduleTrigger",
+            "position": [
+                250,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "url": "http://localhost:5678/healthz",
+                "method": "GET",
+                "options": {
+                    "timeout": 5000
+                }
+            },
+            "name": "Check n8n",
+            "type": "n8n-nodes-base.httpRequest",
+            "position": [
+                450,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "number": [
+                        {
+                            "value1": "={{$json.statusCode}}",
+                            "operation": "equal",
+                            "value2": 200
+                        }
+                    ]
+                }
+            },
+            "name": "Is Healthy?",
+            "type": "n8n-nodes-base.if",
+            "position": [
+                650,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "values": {
+                    "string": [
+                        {
+                            "name": "status",
+                            "value": "healthy"
+                        }
+                    ]
+                }
+            },
+            "name": "OK",
+            "type": "n8n-nodes-base.set",
+            "position": [
+                850,
+                250
+            ]
+        },
+        {
+            "parameters": {
+                "command": "Write-Host 'n8n is down! Attempting restart...' && npx -y n8n &"
+            },
+            "name": "Restart n8n",
+            "type": "n8n-nodes-base.executeCommand",
+            "position": [
+                850,
+                400
+            ]
+        }
+    ],
+    "connections": {
+        "Every 5 Min": {
+            "main": [
+                [
+                    {
+                        "node": "Check n8n",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Check n8n": {
+            "main": [
+                [
+                    {
+                        "node": "Is Healthy?",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Is Healthy?": {
+            "main": [
+                [
+                    {
+                        "node": "OK",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Restart n8n",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "tags": [
+        "health",
+        "monitor"
+    ]
+}

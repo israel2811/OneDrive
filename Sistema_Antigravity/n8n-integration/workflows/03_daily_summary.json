@@ -1,0 +1,73 @@
+{
+    "name": "03 - Daily Summary Report",
+    "nodes": [
+        {
+            "parameters": {
+                "rule": {
+                    "interval": [
+                        {
+                            "field": "cronExpression",
+                            "expression": "0 9 * * *"
+                        }
+                    ]
+                }
+            },
+            "name": "Trigger 9AM",
+            "type": "n8n-nodes-base.scheduleTrigger",
+            "position": [
+                250,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "filePath": "C:\\Users\\Lenovo\\OneDrive\\Sistema_Antigravity\\recovery-system\\STATUS_TRACKER.md"
+            },
+            "name": "Read Status",
+            "type": "n8n-nodes-base.readFile",
+            "position": [
+                450,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "const data = items[0].json.data;\nreturn [{ json: { summary: data.substring(0, 2000), date: new Date().toISOString().split('T')[0] } }];"
+            },
+            "name": "Format",
+            "type": "n8n-nodes-base.code",
+            "position": [
+                650,
+                300
+            ]
+        }
+    ],
+    "connections": {
+        "Trigger 9AM": {
+            "main": [
+                [
+                    {
+                        "node": "Read Status",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Read Status": {
+            "main": [
+                [
+                    {
+                        "node": "Format",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "tags": [
+        "daily",
+        "report"
+    ]
+}

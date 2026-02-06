@@ -1,0 +1,162 @@
+{
+    "name": "05 - Multi-AI Orchestration",
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "ask-all-ais",
+                "responseMode": "responseNode"
+            },
+            "name": "Webhook",
+            "type": "n8n-nodes-base.webhook",
+            "position": [
+                250,
+                400
+            ],
+            "webhookId": "multi-ai"
+        },
+        {
+            "parameters": {
+                "values": {
+                    "string": [
+                        {
+                            "name": "q",
+                            "value": "={{$json.body.question}}"
+                        }
+                    ]
+                }
+            },
+            "name": "Extract",
+            "type": "n8n-nodes-base.set",
+            "position": [
+                450,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "model": "gpt-4",
+                "messages": {
+                    "values": [
+                        {
+                            "content": "={{$json.q}}"
+                        }
+                    ]
+                }
+            },
+            "name": "GPT4",
+            "type": "n8n-nodes-base.openAi",
+            "position": [
+                650,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "model": "claude-3-opus",
+                "messages": {
+                    "values": [
+                        {
+                            "content": "={{$json.q}}"
+                        }
+                    ]
+                }
+            },
+            "name": "Claude",
+            "type": "n8n-nodes-base.anthropic",
+            "position": [
+                650,
+                500
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "return [{ json: { gpt4: items[0]?.json, claude: items[1]?.json, timestamp: new Date().toISOString() } }];"
+            },
+            "name": "Merge",
+            "type": "n8n-nodes-base.code",
+            "position": [
+                850,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "respondWith": "json",
+                "responseBody": "={{$json}}"
+            },
+            "name": "Respond",
+            "type": "n8n-nodes-base.respondToWebhook",
+            "position": [
+                1050,
+                400
+            ]
+        }
+    ],
+    "connections": {
+        "Webhook": {
+            "main": [
+                [
+                    {
+                        "node": "Extract",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Extract": {
+            "main": [
+                [
+                    {
+                        "node": "GPT4",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "Claude",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "GPT4": {
+            "main": [
+                [
+                    {
+                        "node": "Merge",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Claude": {
+            "main": [
+                [
+                    {
+                        "node": "Merge",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Merge": {
+            "main": [
+                [
+                    {
+                        "node": "Respond",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "tags": [
+        "multi-ai",
+        "orchestration"
+    ]
+}

@@ -1,0 +1,56 @@
+{
+  "name": "01 - Auto Backup Sistema Antigravity",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "hours", "hoursInterval": 1 }]
+        }
+      },
+      "name": "Trigger: Every Hour",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "operation": "list",
+        "folderPath": "C:\\Users\\Lenovo\\OneDrive\\Sistema_Antigravity"
+      },
+      "name": "Read Local Files",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "folderId": "ANTIGRAVITY_BACKUP"
+      },
+      "name": "Upload to Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            { "name": "status", "value": "Backup completed at {{$now}}" }
+          ]
+        }
+      },
+      "name": "Log Success",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [850, 300]
+    }
+  ],
+  "connections": {
+    "Trigger: Every Hour": { "main": [[{ "node": "Read Local Files", "type": "main", "index": 0 }]] },
+    "Read Local Files": { "main": [[{ "node": "Upload to Google Drive", "type": "main", "index": 0 }]] },
+    "Upload to Google Drive": { "main": [[{ "node": "Log Success", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "saveManualExecutions": true, "saveDataSuccessExecution": "all" },
+  "tags": ["backup", "automation", "antigravity"]
+}

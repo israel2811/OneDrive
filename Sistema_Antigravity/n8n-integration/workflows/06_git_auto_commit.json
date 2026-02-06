@@ -1,0 +1,73 @@
+{
+    "name": "06 - Git Auto Commit",
+    "nodes": [
+        {
+            "parameters": {
+                "rule": {
+                    "interval": [
+                        {
+                            "field": "hours",
+                            "hoursInterval": 2
+                        }
+                    ]
+                }
+            },
+            "name": "Every 2 Hours",
+            "type": "n8n-nodes-base.scheduleTrigger",
+            "position": [
+                250,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "command": "cd C:\\Users\\Lenovo\\OneDrive\\Sistema_Antigravity && git add -A && git commit -m \"Auto-commit: $(Get-Date -Format 'yyyy-MM-dd HH:mm')\" 2>&1 || echo 'No changes'"
+            },
+            "name": "Git Commit",
+            "type": "n8n-nodes-base.executeCommand",
+            "position": [
+                450,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "command": "cd C:\\Users\\Lenovo\\OneDrive\\Sistema_Antigravity && git push origin main 2>&1 || echo 'Push skipped'"
+            },
+            "name": "Git Push",
+            "type": "n8n-nodes-base.executeCommand",
+            "position": [
+                650,
+                300
+            ]
+        }
+    ],
+    "connections": {
+        "Every 2 Hours": {
+            "main": [
+                [
+                    {
+                        "node": "Git Commit",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Git Commit": {
+            "main": [
+                [
+                    {
+                        "node": "Git Push",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "tags": [
+        "git",
+        "automation"
+    ]
+}
