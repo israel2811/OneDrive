@@ -1,0 +1,15 @@
+Index: prompt-state
+===================================================================
+--- prompt-state	before
++++ prompt-state	after
+@@ -63,8 +63,10 @@
+ # Environment
+ You have been invoked in the following environment: 
+  - Primary working directory: C:\.claude
+   - Is a git repository: false
++ - Additional working directories:
++  - C:\.claude
+  - Platform: win32
+  - OS Version: 
+  - The current date is: 2026-02-05
+  - You are powered by the model named Opus 4. The exact model ID is claude-opus-4-6.
